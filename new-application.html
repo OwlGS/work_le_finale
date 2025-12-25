@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подать заявку - Корочки.есть</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/mobile.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <a href="index.html" class="logo">
+                    <img src="images/logo.svg" alt="Корочки.есть" style="height: 40px;">
+                </a>
+                <div class="nav-links">
+                    <a href="index.html">Главная</a>
+                    <a href="applications.html">Мои заявки</a>
+                    <a href="new-application.html">Подать заявку</a>
+                    <a href="#" onclick="AuthService.logout(); return false;">Выход</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-container">
+            <h1 class="text-center">Подать заявку на обучение</h1>
+            
+            <form id="applicationForm">
+                <div class="form-group">
+                    <label for="course_id">Курс *</label>
+                    <select id="course_id" name="course_id" required>
+                        <option value="">Выберите курс...</option>
+                    </select>
+                    <span class="error" id="course-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="start_date">Желаемая дата начала обучения *</label>
+                    <input type="text" id="start_date" name="start_date" placeholder="ДД.ММ.ГГГГ" required>
+                    <small>Формат: ДД.ММ.ГГГГ (например, 15.01.2025)</small>
+                    <span class="error" id="date-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Способ оплаты *</label>
+                    <div style="margin-top: 0.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">
+                            <input type="radio" name="payment_method" value="cash" required>
+                            Наличными
+                        </label>
+                        <label style="display: block;">
+                            <input type="radio" name="payment_method" value="phone_transfer" required>
+                            Перевод по номеру телефона
+                        </label>
+                    </div>
+                    <span class="error" id="payment-error"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Отправить заявку</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="scripts/auth.js"></script>
+    <script>
+        if (!AuthService.getToken()) {
+            window.location.href = 'login.html';
+        }
+
+        async function loadCourses() {
+            try {
+                const response = await fetch(`${API_URL}/applications/courses`);
+                if (response.ok) {
+                    const courses = await response.json();
+                    const select = document.getElementById('course_id');
+                    
+                    courses.forEach(course => {
+                        const option = document.createElement('option');
+                        option.value = course.course_id;
+                        option.textContent = `${course.name} (${course.duration}, ${course.price} ₽)`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки курсов:', error);
+            }
+        }
+
+        loadCourses();
+
+        document.getElementById('start_date').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '.' + value.slice(2);
+            }
+            if (value.length >= 5) {
+                value = value.slice(0, 5) + '.' + value.slice(5, 9);
+            }
+            
+            e.target.value = value;
+        });
+
+        document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Очистка ошибок
+            document.querySelectorAll('.error').forEach(el => el.textContent = '');
+
+            const courseIdValue = document.getElementById('course_id').value;
+            const formData = {
+                course_id: courseIdValue ? parseInt(courseIdValue) : null,
+                start_date: document.getElementById('start_date').value,
+                payment_method: document.querySelector('input[name="payment_method"]:checked')?.value
+            };
+
+            let hasErrors = false;
+
+            if (!formData.course_id) {
+                document.getElementById('course-error').textContent = 'Выберите курс';
+                hasErrors = true;
+            }
+
+            const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
+            if (!dateRegex.test(formData.start_date)) {
+                document.getElementById('date-error').textContent = 'Неверный формат даты';
+                hasErrors = true;
+            }
+
+            if (!formData.payment_method) {
+                document.getElementById('payment-error').textContent = 'Выберите способ оплаты';
+                hasErrors = true;
+            }
+
+            if (hasErrors) return;
+
+            try {
+                const response = await fetch(`${API_URL}/applications`, {
+                    method: 'POST',
+                    headers: AuthService.getAuthHeaders(),
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Заявка успешно отправлена на рассмотрение!');
+                    window.location.href = 'applications.html';
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                    console.error('Ошибка сервера:', data);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
+

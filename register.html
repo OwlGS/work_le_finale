@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Корочки.есть</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/mobile.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <a href="index.html" class="logo">
+                    <img src="images/logo.svg" alt="Корочки.есть" style="height: 40px;">
+                </a>
+                <div class="nav-links">
+                    <a href="index.html">Главная</a>
+                    <a href="login.html">Вход</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-container">
+            <h1 class="text-center">Регистрация</h1>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="login">Логин *</label>
+                    <input type="text" id="login" name="login" required>
+                    <small>Латиница и цифры, минимум 6 символов</small>
+                    <span class="error" id="login-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Пароль *</label>
+                    <input type="password" id="password" name="password" required>
+                    <small>Минимум 8 символов</small>
+                    <span class="error" id="password-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="full_name">ФИО *</label>
+                    <input type="text" id="full_name" name="full_name" required>
+                    <small>Только кириллица и пробелы</small>
+                    <span class="error" id="full_name-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Телефон *</label>
+                    <input type="text" id="phone" name="phone" placeholder="8(999)999-99-99" required>
+                    <span class="error" id="phone-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                    <span class="error" id="email-error"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+
+            <p class="auth-link">
+                Уже зарегистрированы? <a href="login.html">Войти</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="scripts/auth.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            document.querySelectorAll('.error').forEach(el => el.textContent = '');
+
+            const formData = {
+                login: document.getElementById('login').value,
+                password: document.getElementById('password').value,
+                full_name: document.getElementById('full_name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value
+            };
+
+            let hasErrors = false;
+
+            if (!/^[a-zA-Z0-9]{6,}$/.test(formData.login)) {
+                document.getElementById('login-error').textContent = 
+                    'Логин должен содержать только латиницу и цифры, минимум 6 символов';
+                hasErrors = true;
+            }
+
+            if (formData.password.length < 8) {
+                document.getElementById('password-error').textContent = 
+                    'Пароль должен содержать минимум 8 символов';
+                hasErrors = true;
+            }
+
+            if (!/^[А-Яа-яЁё\s]+$/.test(formData.full_name)) {
+                document.getElementById('full_name-error').textContent = 
+                    'ФИО должно содержать только кириллицу и пробелы';
+                hasErrors = true;
+            }
+
+            if (!/^8\(\d{3}\)\d{3}-\d{2}-\d{2}$/.test(formData.phone)) {
+                document.getElementById('phone-error').textContent = 
+                    'Телефон должен быть в формате 8(XXX)XXX-XX-XX';
+                hasErrors = true;
+            }
+
+            if (hasErrors) return;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Регистрация успешна! Сейчас перейдете на страницу входа.');
+                    window.location.href = 'login.html';
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        });
+    </script>
+</body>
+</html>
+

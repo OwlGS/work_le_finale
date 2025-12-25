@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - Корочки.есть</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/mobile.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <a href="index.html" class="logo">
+                    <img src="images/logo.svg" alt="Корочки.есть" style="height: 40px;">
+                </a>
+                <div class="nav-links">
+                    <a href="index.html">Главная</a>
+                    <a href="register.html">Регистрация</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-container">
+            <h1 class="text-center">Авторизация</h1>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="login">Логин</label>
+                    <input type="text" id="login" name="login" required>
+                    <span class="error" id="login-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required>
+                    <span class="error" id="password-error"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Войти</button>
+            </form>
+
+            <p class="auth-link">
+                Еще не зарегистрированы? <a href="register.html">Регистрация</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="scripts/auth.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            document.querySelectorAll('.error').forEach(el => el.textContent = '');
+
+            const formData = {
+                login: document.getElementById('login').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    AuthService.saveToken(data.token);
+                    AuthService.saveUser(data.user);
+                    
+                    if (data.user.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'applications.html';
+                    }
+                } else {
+                    document.getElementById('login-error').textContent = data.error;
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        });
+
+        if (AuthService.getToken()) {
+            const user = AuthService.getUser();
+            if (user) {
+                if (user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'applications.html';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

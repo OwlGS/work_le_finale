@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корочки.есть - Портал дополнительного образования</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/mobile.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <a href="index.html" class="logo">
+                    <img src="images/logo.svg" alt="Корочки.есть" style="height: 40px;">
+                </a>
+                <div class="nav-links" id="navLinks">
+                    <a href="index.html">Главная</a>
+                    <a href="login.html" id="loginLink">Вход</a>
+                    <a href="register.html" id="registerLink">Регистрация</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Добро пожаловать на портал дополнительного профессионального образования</h1>
+                <p class="lead">Получите новые знания и навыки с лучшими онлайн-курсами</p>
+                <a href="register.html" class="btn btn-primary">Начать обучение</a>
+            </div>
+        </section>
+
+        <section class="slider-section">
+            <div class="container">
+                <h2>Наши достижения</h2>
+                <div class="slider-container">
+                    <div class="slides">
+                        <div class="slide active">
+                            <img src="images/slider/1.svg" alt="Слайд 1">
+                        </div>
+                        <div class="slide">
+                            <img src="images/slider/2.svg" alt="Слайд 2">
+                        </div>
+                        <div class="slide">
+                            <img src="images/slider/3.svg" alt="Слайд 3">
+                        </div>
+                        <div class="slide">
+                            <img src="images/slider/4.svg" alt="Слайд 4">
+                        </div>
+                    </div>
+                    <button class="slider-prev" aria-label="Предыдущий слайд">‹</button>
+                    <button class="slider-next" aria-label="Следующий слайд">›</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="courses">
+            <div class="container">
+                <h2>Наши курсы</h2>
+                <div class="courses-grid" id="coursesGrid">
+                    <div class="course-card">
+                        <h3>Основы алгоритмизации и программирования</h3>
+                        <p>Изучение основ алгоритмов и написания кода</p>
+                        <p class="course-duration">Длительность: 3 месяца</p>
+                        <p class="course-price">15 000 ₽</p>
+                    </div>
+                    <div class="course-card">
+                        <h3>Основы веб-дизайна</h3>
+                        <p>Создание современных веб-интерфейсов</p>
+                        <p class="course-duration">Длительность: 2 месяца</p>
+                        <p class="course-price">12 000 ₽</p>
+                    </div>
+                    <div class="course-card">
+                        <h3>Основы проектирования баз данных</h3>
+                        <p>Проектирование реляционных БД</p>
+                        <p class="course-duration">Длительность: 2 месяца</p>
+                        <p class="course-price">13 000 ₽</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Корочки.есть. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/slider.js"></script>
+    <script>
+        const checkAuth = async () => {
+            const token = AuthService.getToken();
+            if (token) {
+                const user = AuthService.getUser();
+                if (user) {
+                    document.getElementById('navLinks').innerHTML = `
+                        <a href="index.html">Главная</a>
+                        <a href="applications.html">Мои заявки</a>
+                        <a href="new-application.html">Подать заявку</a>
+                        ${user.role === 'admin' ? '<a href="admin.html">Админ панель</a>' : ''}
+                        <a href="#" onclick="AuthService.logout(); return false;">Выход (${user.login})</a>
+                    `;
+                }
+            }
+        };
+
+        checkAuth();
+    </script>
+</body>
+</html>
+
