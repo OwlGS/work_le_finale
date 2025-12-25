@@ -74,5 +74,3 @@ class Slider {
 document.addEventListener('DOMContentLoaded', () => {
     new Slider('.slider-container');
 });
-
-
